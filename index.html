@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iKwath System - Soft Translucent Pain Aura UI</title>
+  <!-- Tailwind CSS Framework -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Soft translucent infrared heat pulse animation (Low opacity) */
+    @keyframes soft-heat-pulse {
+      0%, 100% { transform: scale(0.94); opacity: 0.35; filter: drop-shadow(0 0 6px rgba(255, 60, 60, 0.4)); }
+      50% { transform: scale(1.15); opacity: 0.65; filter: drop-shadow(0 0 14px rgba(255, 60, 60, 0.7)); }
+    }
+    .soft-heat-pulse {
+      animation: soft-heat-pulse 1.8s infinite ease-in-out;
+      transform-origin: center;
+    }
+    /* TFT Hardware Bezel Shadow */
+    .tft-bezel {
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.85), 0 10px 25px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans antialiased">
+  <div class="max-w-6xl mx-auto space-y-8">
+    
+    <!-- Top Header -->
+    <header class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full">iKwath System</span>
+          <span class="text-xs text-slate-400">ESP32 + 2.8" ILI9341 TFT Display (320×240)</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white mt-1">Soft Translucent Pain Aura UI</h1>
+        <p class="text-sm text-slate-400 mt-1">Adjusted red pain spot opacity to a soft, semi-transparent infrared heat glow.</p>
+      </div>
+      
+      <!-- View Mode Switcher -->
+      <div class="flex items-center gap-2">
+        <button id="patientViewBtn" onclick="switchView('patient')" class="px-3 py-1.5 bg-emerald-600 text-xs font-bold text-white border border-emerald-500 rounded-lg transition-colors">
+          Patient UI Mode
+        </button>
+        <button id="backendViewBtn" onclick="switchView('backend')" class="px-3 py-1.5 bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors">
+          Backend Diagnostic Mode 🔒
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Display Simulator (7 Cols) -->
+      <div class="lg:col-span-7 flex flex-col items-center justify-center space-y-4">
+        
+        <!-- Hardware Frame -->
+        <div class="relative bg-slate-900 border-4 border-slate-800 rounded-2xl p-6 shadow-2xl tft-bezel flex flex-col items-center">
+          
+          <!-- Screen Header Bar -->
+          <div class="w-full flex justify-between items-center text-[11px] text-slate-400 mb-2 px-1">
+            <span class="font-mono">ILI9341 2.8" TFT (320×240 px)</span>
+            <span class="text-emerald-400 font-mono" id="viewModeBadge">PATIENT SCREEN (SOFT RED AURA)</span>
+          </div>
+
+          <!-- LCD Viewport -->
+          <div id="tftScreen" class="relative bg-black border-2 border-slate-700 rounded overflow-hidden shadow-inner w-[320px] h-[240px] flex flex-col text-slate-100 font-sans select-none">
+            
+            <!-- Top Status Bar -->
+            <div class="h-6 bg-slate-900 border-b border-slate-800 px-2.5 flex items-center justify-between text-[11px] shrink-0">
+              <div class="flex items-center gap-1.5 font-bold text-amber-400">
+                <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>iKwath</span>
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono" id="navCounterText">1 / 3</div>
+              <div class="text-[10px] text-emerald-400 font-semibold" id="topStatusIndicator">READY</div>
+            </div>
+
+            <!-- Screen Body (Patient Layout) -->
+            <div id="patientUIPane" class="flex-1 p-2 flex gap-2 overflow-hidden bg-slate-950 text-slate-200">
+              
+              <!-- Left: Photo Card with Soft Red Pain Aura (148px Wide) -->
+              <div class="w-1/2 bg-slate-900/90 border border-slate-800 rounded p-1 flex flex-col items-center justify-between relative overflow-hidden">
+                <div class="text-[9.5px] font-bold text-red-400 uppercase tracking-wider text-center w-full bg-red-950/80 py-0.5 border border-red-800/60 rounded z-10">
+                  Target Pain Location
+                </div>
+                
+                <!-- Photo Container -->
+                <div class="relative w-full h-[142px] flex items-center justify-center my-0.5 rounded overflow-hidden bg-slate-950">
+                  
+                  <img id="diseaseModelImg" src="masculine_body_pain_1790709532784.jpg" class="w-full h-full object-cover object-top filter brightness-105 contrast-115 rounded transition-opacity duration-300" alt="Disease Model Photo" />
+                  
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/20 pointer-events-none"></div>
+
+                  <!-- Dynamic Soft Translucent Red Pain Spot Overlay (Low Opacity: 40%) -->
+                  <div id="painSpotOverlay" class="absolute pointer-events-none transition-all duration-300">
+                    <!-- Injected via JS -->
+                  </div>
+
+                </div>
+
+                <div id="painSpotLabel" class="text-[9.5px] font-bold text-red-300 bg-red-950/90 border border-red-800/70 px-1.5 py-0.5 rounded text-center w-full truncate z-10">
+                  Knee & Joint Pain
+                </div>
+              </div>
+
+              <!-- Right: Patient Minimalist Prescription Pane -->
+              <div class="w-1/2 flex flex-col justify-between space-y-1.5">
+                
+                <!-- Ailment Name -->
+                <div class="bg-gradient-to-r from-red-950/80 to-slate-900 border border-red-800/60 rounded p-2">
+                  <div class="text-[9px] font-bold text-red-400 uppercase tracking-widest leading-none">Prescription</div>
+                  <div class="text-xs font-extrabold text-white mt-1 leading-tight truncate" id="dispAilmentName">Joint & Knee Pain</div>
+                </div>
+
+                <!-- Powder Name & Dose -->
+                <div class="bg-slate-900 border border-slate-800 rounded p-2 space-y-1.5">
+                  <div>
+                    <div class="text-[9.5px] text-slate-400 font-medium">Herbal Powder:</div>
+                    <div class="text-xs font-bold text-amber-300 leading-tight mt-0.5 truncate" id="dispPowderName">Dashamula Yavakuta</div>
+                  </div>
+
+                  <div class="flex items-center justify-between border-t border-slate-800/80 pt-1">
+                    <span class="text-[9.5px] text-slate-400 font-medium">Required Dose:</span>
+                    <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/50 px-1.5 py-0.5 rounded" id="dispDoseWeight">21.0 g</span>
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <button onclick="simulateKnobPress()" class="bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white rounded p-1.5 text-center transition-transform active:scale-95 shadow-md">
+                  <div class="text-xs font-bold uppercase tracking-wider">PRESS KNOB TO BREW</div>
+                  <div class="text-[8.5px] text-emerald-100 font-mono mt-0.5">Automatic Extraction</div>
+                </button>
+
+              </div>
+
+            </div>
+
+            <!-- Hidden Backend Diagnostics Pane -->
+            <div id="backendPane" class="hidden flex-1 p-3 bg-slate-950 text-slate-200 overflow-y-auto font-mono text-xs space-y-2">
+              <div class="text-amber-400 font-bold border-b border-slate-800 pb-1 flex justify-between">
+                <span>[BACKEND SYSTEM METRICS]</span>
+                <span class="text-emerald-400">PID / SENSOR LOGS</span>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                  <div class="text-slate-400">Water Target (Load Cell):</div>
+                  <div class="text-cyan-400 font-bold" id="backWater">84.0 g (±1.5g)</div>
+                </div>
+                <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                  <div class="text-slate-400">Bath Heater Temp:</div>
+                  <div class="text-amber-400 font-bold" id="backTemp">85.0°C - 90.0°C</div>
+                </div>
+                <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                  <div class="text-slate-400">Target Delta TDS:</div>
+                  <div class="text-emerald-400 font-bold" id="backTds">312 ppm</div>
+                </div>
+                <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                  <div class="text-slate-400">Extraction Timeout:</div>
+                  <div class="text-slate-200 font-bold" id="backTime">12 Minutes</div>
+                </div>
+              </div>
+
+              <div class="bg-slate-900 p-2 rounded border border-slate-800 text-[10px] space-y-1 text-slate-300">
+                <div><strong>PID Band:</strong> Mandagni Indirect Water Bath Control (PWM SSR-40DA)</div>
+                <div><strong>Cutoff Safety:</strong> Software 95°C / Thermal Fuse 120°C / Lid Lock Enabled</div>
+                <div><strong>Cloud Logging:</strong> Live curve streaming to Firebase DB</div>
+              </div>
+            </div>
+
+            <!-- Footer Bar -->
+            <div class="h-4 bg-slate-900 border-t border-slate-800 px-2 flex items-center justify-between text-[8px] text-slate-400 shrink-0">
+              <span class="truncate">Vaidya prescribed. Not an automated medical diagnosis.</span>
+              <span class="font-mono text-emerald-400" id="footerBackendStatus">Backend: Logging Active</span>
+            </div>
+
+          </div>
+
+          <!-- Controls Simulator -->
+          <div class="mt-6 flex items-center gap-6 bg-slate-950 px-5 py-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-3">
+              <button onclick="prevCard()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-200 active:scale-95 transition-transform">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+              </button>
+              
+              <div class="flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-b from-slate-700 to-slate-900 border-2 border-amber-500/60 shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform" onclick="simulateKnobPress()">
+                  <div class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></div>
+                </div>
+                <span class="text-[10px] text-slate-400 mt-1 font-mono">PUSH KNOB</span>
+              </div>
+
+              <button onclick="nextCard()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-200 active:scale-95 transition-transform">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+              </button>
+            </div>
+
+            <div class="text-left border-l border-slate-800 pl-4 text-xs">
+              <div class="text-slate-300 font-semibold">Rotary Control</div>
+              <div class="text-slate-400 text-[11px]">Turn to pick ailment • Press to start brew</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Specification Sidebar (5 Cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Ailment Buttons Grid -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
+          <h3 class="text-sm font-bold text-white flex items-center justify-between">
+            <span>Select Symptom</span>
+            <span class="text-xs font-normal text-emerald-400 font-bold">3 Prescriptions</span>
+          </h3>
+
+          <div class="grid grid-cols-1 gap-2.5" id="ailmentButtonsGrid">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Opacity Verification Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
+          <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Pain Spot Opacity Update
+          </h3>
+
+          <div class="text-xs text-slate-300 space-y-2">
+            <div class="flex justify-between py-1 border-b border-slate-800">
+              <span class="text-slate-400">Previous Spot Opacity:</span>
+              <span class="font-semibold text-red-400">80% (Dark Solid Red)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800">
+              <span class="text-slate-400">Updated Spot Opacity:</span>
+              <span class="font-semibold text-emerald-400">38% - 45% (Soft Translucent Red Glow)</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Visual Effect:</span>
+              <span class="font-semibold text-amber-300">Natural Infrared Heat Aura</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Prescriptions database with soft translucent red heat spot overlays
+    const ailmentsData = [
+      {
+        id: "leg_pain",
+        name: "Joint & Knee Pain",
+        powder: "Dashamula Yavakuta",
+        dose: "21.0 g",
+        water: "84.0 g",
+        temp: "85.0 - 90.0 °C",
+        tds: "312 ppm",
+        time: "12 Minutes",
+        zoneLabel: "Knee & Joint Pain",
+        photoSrc: "masculine_body_pain_1790709532784.jpg",
+        painSpotCSS: "bottom: 24px; left: 40px; width: 34px; height: 34px;"
+      },
+      {
+        id: "cold_cough",
+        name: "Cold & Chest Congestion",
+        powder: "Trikatu & Sitopaladi",
+        dose: "21.0 g",
+        water: "84.0 g",
+        temp: "88.0 - 90.0 °C",
+        tds: "285 ppm",
+        time: "10 Minutes",
+        zoneLabel: "Chest & Lungs Area",
+        photoSrc: "cold_chest_pain_1790709552652.jpg",
+        painSpotCSS: "top: 45px; left: 45px; width: 42px; height: 42px;"
+      },
+      {
+        id: "headache",
+        name: "Headache & Migraine",
+        powder: "Pathyadi & Jatamansi",
+        dose: "21.0 g",
+        water: "84.0 g",
+        temp: "85.0 - 88.0 °C",
+        tds: "260 ppm",
+        time: "11 Minutes",
+        zoneLabel: "Forehead & Temples",
+        photoSrc: "headache_pain_1790709569438.jpg",
+        painSpotCSS: "top: 22px; left: 48px; width: 32px; height: 32px;"
+      }
+    ];
+
+    let currentIndex = 0;
+
+    function renderScreen() {
+      const data = ailmentsData[currentIndex];
+      
+      document.getElementById('navCounterText').innerText = `${currentIndex + 1} / 3`;
+      
+      document.getElementById('diseaseModelImg').src = data.photoSrc;
+      
+      // Inject soft translucent red heat spot overlay (Lower Opacity: bg-red-500/40 & soft radial blur)
+      document.getElementById('painSpotOverlay').style = data.painSpotCSS;
+      document.getElementById('painSpotOverlay').innerHTML = `
+        <div class="w-full h-full rounded-full bg-red-500/40 border border-amber-300/60 soft-heat-pulse backdrop-blur-[1px]"></div>
+      `;
+
+      document.getElementById('painSpotLabel').innerText = data.zoneLabel;
+      
+      document.getElementById('dispAilmentName').innerText = data.name;
+      document.getElementById('dispPowderName').innerText = data.powder;
+      document.getElementById('dispDoseWeight').innerText = data.dose;
+
+      // Backend metrics
+      document.getElementById('backWater').innerText = data.water + " (±1.5g)";
+      document.getElementById('backTemp').innerText = data.temp;
+      document.getElementById('backTds').innerText = data.tds;
+      document.getElementById('backTime').innerText = data.time;
+
+      renderAilmentButtons();
+    }
+
+    function renderAilmentButtons() {
+      const grid = document.getElementById('ailmentButtonsGrid');
+      grid.innerHTML = ailmentsData.map((item, index) => `
+        <button onclick="selectCard(${index})" class="p-3 rounded-lg text-left text-xs font-medium border transition-all ${
+          index === currentIndex 
+            ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-sm' 
+            : 'bg-slate-800/60 border-slate-700/80 text-slate-300 hover:bg-slate-800'
+        }">
+          <div class="font-bold text-sm">${item.name}</div>
+          <div class="text-xs ${index === currentIndex ? 'text-emerald-400' : 'text-slate-400'} mt-0.5">${item.powder} (${item.dose})</div>
+        </button>
+      `).join('');
+    }
+
+    function prevCard() {
+      currentIndex = (currentIndex - 1 + ailmentsData.length) % ailmentsData.length;
+      renderScreen();
+    }
+
+    function nextCard() {
+      currentIndex = (currentIndex + 1) % ailmentsData.length;
+      renderScreen();
+    }
+
+    function selectCard(idx) {
+      currentIndex = idx;
+      renderScreen();
+    }
+
+    function simulateKnobPress() {
+      const data = ailmentsData[currentIndex];
+      alert(`[iKwath System]\n\nBrew Started!\n\nAilment: ${data.name}\nPowder: ${data.powder} (${data.dose})\n\n[Backend Control Active]\nWeighed Water Target: ${data.water}\nBath Temp Target: ${data.temp}`);
+    }
+
+    function switchView(mode) {
+      const patientPane = document.getElementById('patientUIPane');
+      const backendPane = document.getElementById('backendPane');
+      const patientBtn = document.getElementById('patientViewBtn');
+      const backendBtn = document.getElementById('backendViewBtn');
+      const badge = document.getElementById('viewModeBadge');
+
+      if (mode === 'patient') {
+        patientPane.classList.remove('hidden');
+        backendPane.classList.add('hidden');
+        patientBtn.className = "px-3 py-1.5 bg-emerald-600 text-xs font-bold text-white border border-emerald-500 rounded-lg transition-colors";
+        backendBtn.className = "px-3 py-1.5 bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors";
+        badge.innerText = "PATIENT SCREEN (SOFT RED AURA)";
+        badge.className = "text-emerald-400 font-mono";
+      } else {
+        patientPane.classList.add('hidden');
+        backendPane.classList.remove('hidden');
+        backendBtn.className = "px-3 py-1.5 bg-amber-600 text-xs font-bold text-white border border-amber-500 rounded-lg transition-colors";
+        patientBtn.className = "px-3 py-1.5 bg-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors";
+        badge.innerText = "BACKEND DIAGNOSTICS (LOGGING)";
+        badge.className = "text-amber-400 font-mono";
+      }
+    }
+
+    renderScreen();
+  </script>
+</body>
+</html>

@@ -28,5 +28,5 @@ This repository contains the ESP32 Display Controller and User Interface mockup 
 
 ## 🌐 Live Project Demos (Available 24/7)
 
-- **SIH 2026 Telemetry Dashboard:** [https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/dashboard.html](https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/dashboard.html)
-- **Machine LCD Screen Mockup:** [https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/](https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/)
+- **Ikwath observation dashboard:** [https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/dashboard.html](https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/dashboard.html)
+- **machine ui dashboard:** [https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/](https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/)

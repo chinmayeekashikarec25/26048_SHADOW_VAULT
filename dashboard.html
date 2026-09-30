@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iKwath - Smart Ayurvedic Decoction Platform | SIH 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #020617;
+      color: #f8fafc;
+    }
+    
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brewing-gradient {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #064e3b 100%);
+    }
+
+    .selected-symptom-card {
+      border: 1.5px solid #10b981 !important;
+      background: rgba(16, 185, 129, 0.12) !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15) !important;
+    }
+
+    .lcd-screen {
+      background-color: #000000;
+      border: 3px solid #1e293b;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(16, 185, 129, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen selection:bg-emerald-500 selection:text-white flex flex-col">
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80 bg-slate-950/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-extrabold text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+          iK
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-extrabold text-lg leading-none tracking-tight text-white">iKwath Platform</h1>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SIH 2026 v2</span>
+          </div>
+          <p class="text-xs text-slate-400">Pod & Sachet Smart Kwatha Maker</p>
+        </div>
+      </div>
+      
+      <nav class="hidden md:flex items-center space-x-1 text-sm font-medium">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-4 py-2 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 transition-all font-semibold">Dashboard & Live Telemetry</button>
+        <button onclick="switchTab('traceability')" id="nav-traceability" class="nav-btn px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all">Batch Cloud Log</button>
+        <button onclick="switchTab('specs')" id="nav-specs" class="nav-btn px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all">Hardware & BOM</button>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">
+          <span class="w-2 h-2 mr-2 rounded-full bg-emerald-400 animate-pulse"></span> ESP32 Online
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- MAIN SIMULTANEOUS DASHBOARD PANEL -->
+    <section id="tab-dashboard" class="tab-content space-y-6">
+      
+      <!-- Top Banner -->
+      <div class="relative overflow-hidden rounded-3xl brewing-gradient p-6 border border-slate-800 shadow-2xl">
+        <div class="relative z-10 grid md:grid-cols-3 gap-6 items-center">
+          <div class="md:col-span-2 space-y-2">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-semibold">
+              <span>AFI / API Pharmacopoeia Compliant</span>
+              <span>•</span>
+              <span>Mandagni (85–90°C)</span>
+              <span>•</span>
+              <span>ΔTDS Plateau Termination</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Fresh Ayurvedic Decoction <br>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">Standardized, Fast & On-Demand</span>
+            </h2>
+            <p class="text-slate-300 text-xs max-w-xl leading-relaxed">
+              Closed-loop percolation system with weighed dosing (84g). Select a prescription on the right to view live telemetry and display mirror simultaneously.
+            </p>
+          </div>
+          
+          <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 shadow-inner space-y-3">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Machine Controls</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="setMode('pod')" id="btn-mode-pod" class="px-3 py-2 rounded-xl border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 font-bold text-xs transition-all flex items-center justify-center space-x-1">
+                <span>🏷️ Tagged Pod</span>
+              </button>
+              <button onclick="setMode('sachet')" id="btn-mode-sachet" class="px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-bold text-xs transition-all flex items-center justify-center space-x-1">
+                <span>🍵 Loose Sachet</span>
+              </button>
+            </div>
+            <button onclick="toggleBrew()" id="btn-main-brew" class="w-full py-2.5 rounded-xl font-extrabold text-xs bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2">
+              <span id="btn-brew-icon">▶</span>
+              <span id="btn-brew-text">Start Automated Brew Cycle</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SIMULTANEOUS 3-COLUMN GRID -->
+      <div class="grid lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT COLUMN (4 Cols): State Stepper & Safety Interlocks -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="font-bold text-slate-100 text-sm">Brewing Lifecycle State</h3>
+              <span id="current-state-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase font-mono">IDLE</span>
+            </div>
+            
+            <div class="space-y-2 text-xs font-medium" id="state-steps">
+              <div id="step-IDLE" class="step-item p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center justify-between font-bold">
+                <span>1. System Ready / Scan Pod</span>
+                <span class="step-status font-mono text-[10px]">Active</span>
+              </div>
+              <div id="step-SCAN" class="step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between">
+                <span>2. NFC Recognition / Symptom Choose</span>
+                <span class="step-status font-mono text-[10px]">Waiting</span>
+              </div>
+              <div id="step-DOSE" class="step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between">
+                <span>3. Weighed Dosing (84g Load Cell)</span>
+                <span class="step-status font-mono text-[10px]">Waiting</span>
+              </div>
+              <div id="step-EXTRACT" class="step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between">
+                <span>4. Mandagni Heat (85-90°C) + Loop</span>
+                <span class="step-status font-mono text-[10px]">Waiting</span>
+              </div>
+              <div id="step-ENDPOINT" class="step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between">
+                <span>5. ΔTDS Plateau Verification (3 min)</span>
+                <span class="step-status font-mono text-[10px]">Waiting</span>
+              </div>
+              <div id="step-SERVE" class="step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between">
+                <span>6. Spring Marc Recovery & Serve</span>
+                <span class="step-status font-mono text-[10px]">Waiting</span>
+              </div>
+              <div id="step-LOG" class="step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between">
+                <span>7. Cloud Batch Logging</span>
+                <span class="step-status font-mono text-[10px]">Waiting</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
+            <h3 class="font-bold text-slate-100 text-sm border-b border-slate-800 pb-3">Hardware Safety Interlocks</h3>
+            <div class="grid grid-cols-2 gap-2.5 text-xs">
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <div class="text-slate-400 text-[11px]">Float Switch (Dry-Run)</div>
+                <div class="font-mono font-extrabold text-emerald-400 text-[11px] flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> WATER OK</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <div class="text-slate-400 text-[11px]">Lid Microswitch</div>
+                <div class="font-mono font-extrabold text-emerald-400 text-[11px] flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> SEALED</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <div class="text-slate-400 text-[11px]">Thermal Fuse (120°C)</div>
+                <div class="font-mono font-extrabold text-emerald-400 text-[11px] flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> INTACT</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <div class="text-slate-400 text-[11px]">RCD / ELCB Protection</div>
+                <div class="font-mono font-extrabold text-emerald-400 text-[11px] flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> 30mA ACTIVE</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MIDDLE COLUMN (4 Cols): Numeric Gauges & Live Extraction Chart -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-1">
+              <div class="text-[11px] text-slate-400 font-medium">Water Temp</div>
+              <div class="text-xl font-black font-mono text-amber-400" id="val-temp">24.5 °C</div>
+              <div class="text-[10px] text-slate-500">Target: 85 - 90 °C</div>
+            </div>
+            <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-1">
+              <div class="text-[11px] text-slate-400 font-medium">ΔTDS Extract</div>
+              <div class="text-xl font-black font-mono text-emerald-400" id="val-tds">0 ppm</div>
+              <div class="text-[10px] text-slate-500" id="val-target-label">Target: 550 ppm</div>
+            </div>
+            <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-1">
+              <div class="text-[11px] text-slate-400 font-medium">Dosed Water</div>
+              <div class="text-xl font-black font-mono text-cyan-400" id="val-water">0.0 g</div>
+              <div class="text-[10px] text-slate-500">Target: 84.0 g ±2g</div>
+            </div>
+            <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 shadow-xl space-y-1">
+              <div class="text-[11px] text-slate-400 font-medium">Elapsed Time</div>
+              <div class="text-xl font-black font-mono text-purple-400" id="val-time">00:00</div>
+              <div class="text-[10px] text-slate-500">Limit: &le; 12 mins</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-slate-100 text-sm">Extraction & Temp Curve</h3>
+                <p class="text-[11px] text-slate-400">DS18B20 Temp & ΔTDS Slope Monitoring</p>
+              </div>
+              <div class="flex items-center space-x-3 text-[10px] font-semibold">
+                <span class="flex items-center text-amber-400"><span class="w-2 h-0.5 bg-amber-400 mr-1"></span> Temp</span>
+                <span class="flex items-center text-emerald-400"><span class="w-2 h-0.5 bg-emerald-400 mr-1"></span> ΔTDS</span>
+              </div>
+            </div>
+            <div class="h-64 w-full relative">
+              <canvas id="telemetryChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN (4 Cols): SELECT SYMPTOM (3 CARDS) + LCD MIRROR SIMULTANEOUSLY -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <h3 class="font-bold text-slate-100 text-sm">Select Symptom</h3>
+                <p class="text-[11px] text-slate-400">Click to select formulation & target</p>
+              </div>
+              <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 font-bold">
+                3 Prescriptions
+              </span>
+            </div>
+
+            <!-- 3 STACKED PRESCRIPTION CARDS -->
+            <div class="space-y-3">
+              <div onclick="selectSymptomCard(this, 'Joint & Knee Pain', 'Dashamula Yavakuta (21.0 g)', 550, 88, 92)" class="symptom-card selected-symptom-card bg-slate-950 p-4 rounded-xl border border-slate-800 cursor-pointer transition-all flex items-center justify-between">
+                <div class="space-y-0.5">
+                  <h4 class="font-extrabold text-sm text-emerald-400">Joint & Knee Pain</h4>
+                  <p class="text-[11px] text-slate-300 font-medium">Dashamula Yavakuta (21.0 g)</p>
+                </div>
+                <div class="text-right font-mono text-[11px] text-slate-400">
+                  <span class="block text-emerald-400 font-bold">550 ppm</span>
+                  <span class="text-[10px]">88–92°C</span>
+                </div>
+              </div>
+
+              <div onclick="selectSymptomCard(this, 'Cold & Chest Congestion', 'Trikatu & Sitopaladi (21.0 g)', 480, 85, 90)" class="symptom-card bg-slate-950 p-4 rounded-xl border border-slate-800 cursor-pointer transition-all hover:border-slate-700 flex items-center justify-between">
+                <div class="space-y-0.5">
+                  <h4 class="font-extrabold text-sm text-white">Cold & Chest Congestion</h4>
+                  <p class="text-[11px] text-slate-400 font-medium">Trikatu & Sitopaladi (21.0 g)</p>
+                </div>
+                <div class="text-right font-mono text-[11px] text-slate-400">
+                  <span class="block text-emerald-400 font-bold">480 ppm</span>
+                  <span class="text-[10px]">85–90°C</span>
+                </div>
+              </div>
+
+              <div onclick="selectSymptomCard(this, 'Headache & Migraine', 'Pathyadi & Jatamansi (21.0 g)', 450, 85, 90)" class="symptom-card bg-slate-950 p-4 rounded-xl border border-slate-800 cursor-pointer transition-all hover:border-slate-700 flex items-center justify-between">
+                <div class="space-y-0.5">
+                  <h4 class="font-extrabold text-sm text-white">Headache & Migraine</h4>
+                  <p class="text-[11px] text-slate-400 font-medium">Pathyadi & Jatamansi (21.0 g)</p>
+                </div>
+                <div class="text-right font-mono text-[11px] text-slate-400">
+                  <span class="block text-emerald-400 font-bold">450 ppm</span>
+                  <span class="text-[10px]">85–90°C</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex items-center space-x-2 text-xs font-bold text-emerald-400">
+              <span>✓</span>
+              <span>3 Active Prescriptions</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-slate-100 text-sm">Machine 2.8" Color Display Mirror</h3>
+              <span class="text-[10px] font-mono text-slate-400">ILI9341 SPI Hardware Mirror</span>
+            </div>
+            
+            <div class="lcd-screen p-4 rounded-2xl aspect-[4/3] flex flex-col justify-between text-white relative overflow-hidden">
+              <div class="flex justify-between items-center text-[11px] font-mono bg-slate-900/90 px-3 py-1 rounded-lg border border-slate-800">
+                <span class="text-emerald-400 font-bold" id="disp-mode-title">POD MODE</span>
+                <span class="text-slate-300" id="disp-temp-str">24.5°C</span>
+              </div>
+
+              <div class="my-auto text-center space-y-2 py-1" id="screen-display-body">
+                <div class="text-3xl" id="disp-icon">🦵</div>
+                <div class="text-sm font-bold text-emerald-400" id="disp-herb-title">Joint & Knee Pain</div>
+                <div class="text-[11px] text-slate-300" id="disp-sub-text">Dashamula Yavakuta (21.0 g)</div>
+                <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800 max-w-xs mx-auto">
+                  <div id="disp-progress-bar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800 pt-1.5 font-mono">
+                <span>🔄 Turn: Move</span>
+                <span class="text-emerald-400 font-semibold">🔘 Press: Select</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- TAB 2: BATCH CLOUD LOG & TRACEABILITY -->
+    <section id="tab-traceability" class="tab-content hidden space-y-8">
+      <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-extrabold text-white">Batch-to-Cup Cloud Traceability</h2>
+            <p class="text-sm text-slate-400">NFC UID Tag & Sachet Log Records synced to Cloud</p>
+          </div>
+          <button onclick="addMockLog()" class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/20 transition-all">
+            + Simulate New Brew Log
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+              <tr>
+                <th class="p-3">Timestamp</th>
+                <th class="p-3">Mode</th>
+                <th class="p-3">Batch / NFC UID</th>
+                <th class="p-3">Recipe</th>
+                <th class="p-3">Final ΔTDS</th>
+                <th class="p-3">Yield Status</th>
+              </tr>
+            </thead>
+            <tbody id="log-table-body" class="divide-y divide-slate-800/60 font-mono">
+              <tr>
+                <td class="p-3 text-slate-400">2026-09-30 01:10</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">POD</span></td>
+                <td class="p-3 font-bold text-white">04:A2:8F:90:12</td>
+                <td class="p-3">Dashamula Yavakuta</td>
+                <td class="p-3 text-emerald-400">548 ppm</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">100% OPTIMAL</span></td>
+              </tr>
+              <tr>
+                <td class="p-3 text-slate-400">2026-09-30 00:45</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">SACHET</span></td>
+                <td class="p-3 text-slate-400">USER_LOADED_JAR_88</td>
+                <td class="p-3">Trikatu & Sitopaladi</td>
+                <td class="p-3 text-emerald-400">475 ppm</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">99% OPTIMAL</span></td>
+              </tr>
+              <tr>
+                <td class="p-3 text-slate-400">2026-09-29 22:15</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">SACHET</span></td>
+                <td class="p-3 text-slate-400">USER_LOADED_LOOSE</td>
+                <td class="p-3">Pathyadi & Jatamansi</td>
+                <td class="p-3 text-amber-400">320 ppm</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400">⚠️ CHECK POWDER</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: HARDWARE SPECS & BOM -->
+    <section id="tab-specs" class="tab-content hidden space-y-8">
+      <div class="grid lg:grid-cols-2 gap-8">
+        
+        <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
+          <h2 class="text-xl font-extrabold text-white">System Hardware Architecture</h2>
+          <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-emerald-400 text-sm mb-1">Indirect Mandagni Thermal Bath</h4>
+              <p>A 500W element heats an outer water bath only. The inner SS-304 vessel containing the decoction stays capped at 85–90°C. No direct heating contact prevents thermal degradation and herb scorching.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-emerald-400 text-sm mb-1">Forced Circulation Loop</h4>
+              <p>12V PWM-controlled food-grade silicone loop pushes water through a 710µm perforated stainless basket. Ensures complete extraction in &le;12 minutes without open boiling loss.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <h4 class="font-bold text-emerald-400 text-sm mb-1">Dual Dosing Format (Pods & Sachets)</h4>
+              <p>Supports both NTAG213 tagged single-use pods and reusable SS-304 fine mesh sachets holding 21g coarse Yavakuta powder.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-extrabold text-white">SIH 2026 Bill of Materials (BOM)</h2>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Total ~₹8,100</span>
+          </div>
+          <div class="overflow-x-auto max-h-96">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 sticky top-0">
+                <tr>
+                  <th class="p-2.5">Component</th>
+                  <th class="p-2.5">Price</th>
+                  <th class="p-2.5">Function</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 font-mono text-[11px]">
+                <tr><td class="p-2 text-white">ESP32-WROOM-32 DevKit V1</td><td class="p-2 text-emerald-400">₹281</td><td class="p-2 text-slate-400">Main MCU & Controller</td></tr>
+                <tr><td class="p-2 text-white">RC522 13.56MHz NFC Reader</td><td class="p-2 text-emerald-400">₹93</td><td class="p-2 text-slate-400">Pod NFC Tag Reader</td></tr>
+                <tr><td class="p-2 text-white">Analog TDS / EC Sensor Module</td><td class="p-2 text-emerald-400">₹258</td><td class="p-2 text-slate-400">ΔTDS Extraction Monitoring</td></tr>
+                <tr><td class="p-2 text-white">DS18B20 Waterproof Probe</td><td class="p-2 text-emerald-400">₹189</td><td class="p-2 text-slate-400">Mandagni Temp Sensor</td></tr>
+                <tr><td class="p-2 text-white">HX711 + 5kg Load Cell</td><td class="p-2 text-emerald-400">₹200</td><td class="p-2 text-slate-400">Weighed Water Dosing</td></tr>
+                <tr><td class="p-2 text-white">2.8" SPI Color Display (ILI9341)</td><td class="p-2 text-emerald-400">₹670</td><td class="p-2 text-slate-400">Symptom UI & Curve View</td></tr>
+                <tr><td class="p-2 text-white">Portable 30mA RCD / ELCB Plug</td><td class="p-2 text-emerald-400">₹600</td><td class="p-2 text-slate-400">AC Earth Leakage Safety</td></tr>
+                <tr><td class="p-2 text-white">12V 5A SMPS Power Supply</td><td class="p-2 text-emerald-400">₹500</td><td class="p-2 text-slate-400">DC Actuators & Valves</td></tr>
+                <tr><td class="p-2 text-white">SS-304 Reusable Sachets x 2</td><td class="p-2 text-emerald-400">₹300</td><td class="p-2 text-slate-400">Loose Powder Mesh Cups</td></tr>
+                <tr><td class="p-2 text-white">Rotary Encoder (KY-040)</td><td class="p-2 text-emerald-400">₹60</td><td class="p-2 text-slate-400">User Interface Knob</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-emerald-400', 'bg-emerald-500/10', 'border', 'border-emerald-500/20', 'font-semibold');
+        btn.classList.add('text-slate-300');
+      });
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      const activeNav = document.getElementById('nav-' + tabId);
+      activeNav.classList.add('text-emerald-400', 'bg-emerald-500/10', 'border', 'border-emerald-500/20', 'font-semibold');
+      activeNav.classList.remove('text-slate-300');
+    }
+
+    let brewing = false;
+    let brewInterval = null;
+    let mode = 'pod';
+    let currentTemp = 24.5;
+    let currentTDS = 0;
+    let currentWater = 0;
+    let secondsElapsed = 0;
+    let targetTDS = 550;
+    let recipeName = "Dashamula Yavakuta (21.0 g)";
+
+    const ctx = document.getElementById('telemetryChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['0s'],
+        datasets: [
+          {
+            label: 'Temp (°C)',
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            data: [24.5],
+            yAxisID: 'yTemp',
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'ΔTDS (ppm)',
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            data: [0],
+            yAxisID: 'yTDS',
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+          yTemp: {
+            type: 'linear',
+            position: 'left',
+            min: 20,
+            max: 100,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#f59e0b' }
+          },
+          yTDS: {
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            max: 600,
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#10b981' }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    function setMode(m) {
+      mode = m;
+      const bPod = document.getElementById('btn-mode-pod');
+      const bSachet = document.getElementById('btn-mode-sachet');
+      const dTitle = document.getElementById('disp-mode-title');
+      
+      if (m === 'pod') {
+        bPod.className = "px-3 py-2 rounded-xl border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 font-bold text-xs transition-all flex items-center justify-center space-x-1";
+        bSachet.className = "px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-bold text-xs transition-all flex items-center justify-center space-x-1";
+        dTitle.innerText = "POD MODE";
+      } else {
+        bSachet.className = "px-3 py-2 rounded-xl border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 font-bold text-xs transition-all flex items-center justify-center space-x-1";
+        bPod.className = "px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-bold text-xs transition-all flex items-center justify-center space-x-1";
+        dTitle.innerText = "SACHET MODE";
+      }
+    }
+
+    function toggleBrew() {
+      if (brewing) {
+        stopBrew();
+      } else {
+        startBrew();
+      }
+    }
+
+    function startBrew() {
+      brewing = true;
+      secondsElapsed = 0;
+      currentTemp = 24.5;
+      currentTDS = 0;
+      currentWater = 0;
+
+      document.getElementById('btn-brew-icon').innerText = "⏹";
+      document.getElementById('btn-brew-text').innerText = "Stop Brew Cycle";
+      
+      chart.data.labels = ['0s'];
+      chart.data.datasets[0].data = [24.5];
+      chart.data.datasets[1].data = [0];
+      chart.update();
+
+      brewInterval = setInterval(updateSimulation, 500);
+    }
+
+    function stopBrew() {
+      brewing = false;
+      clearInterval(brewInterval);
+      document.getElementById('btn-brew-icon').innerText = "▶";
+      document.getElementById('btn-brew-text').innerText = "Start Automated Brew Cycle";
+      setStep('IDLE');
+    }
+
+    function updateSimulation() {
+      secondsElapsed += 5;
+      
+      let m = Math.floor(secondsElapsed / 60);
+      let s = secondsElapsed % 60;
+      document.getElementById('val-time').innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+
+      let state = 'IDLE';
+      
+      if (secondsElapsed <= 10) {
+        state = 'SCAN';
+        document.getElementById('screen-display-body').innerHTML = `
+          <div class="text-3xl animate-bounce">📡</div>
+          <div class="text-sm font-bold text-emerald-400">Scanning Pod / Recipe</div>
+          <div class="text-[11px] text-slate-300">Reading NTAG213 payload...</div>
+        `;
+      } else if (secondsElapsed <= 30) {
+        state = 'DOSE';
+        currentWater = Math.min(84, currentWater + 21);
+        document.getElementById('val-water').innerText = currentWater.toFixed(1) + ' g';
+        document.getElementById('screen-display-body').innerHTML = `
+          <div class="text-3xl animate-pulse">💧</div>
+          <div class="text-sm font-bold text-cyan-400">Weighed Water Dosing</div>
+          <div class="text-[11px] text-slate-300">${currentWater.toFixed(1)}g / 84.0g target</div>
+        `;
+      } else if (secondsElapsed <= 120) {
+        state = 'EXTRACT';
+        currentTemp = Math.min(88, currentTemp + 2.5);
+        currentTDS = Math.min(targetTDS * 0.85, currentTDS + 25);
+        document.getElementById('screen-display-body').innerHTML = `
+          <div class="text-3xl animate-spin">⚡</div>
+          <div class="text-sm font-bold text-amber-400">Mandagni Heating (88°C)</div>
+          <div class="text-[11px] text-slate-300">Percolation pump active...</div>
+        `;
+      } else if (secondsElapsed <= 180) {
+        state = 'ENDPOINT';
+        currentTemp = 87.5 + (Math.random() * 0.8 - 0.4);
+        currentTDS = Math.min(targetTDS, currentTDS + 5);
+        document.getElementById('screen-display-body').innerHTML = `
+          <div class="text-3xl">📊</div>
+          <div class="text-sm font-bold text-emerald-400">ΔTDS Plateau Check</div>
+          <div class="text-[11px] text-slate-300">Slope ≤ 1 ppm/min stability...</div>
+        `;
+      } else if (secondsElapsed <= 210) {
+        state = 'SERVE';
+        document.getElementById('screen-display-body').innerHTML = `
+          <div class="text-3xl">☕</div>
+          <div class="text-sm font-bold text-emerald-400">Brew Complete! Serving</div>
+          <div class="text-[11px] text-slate-300">Spring Marc Recovery engaged</div>
+        `;
+      } else {
+        state = 'LOG';
+        document.getElementById('screen-display-body').innerHTML = `
+          <div class="text-3xl">☁️</div>
+          <div class="text-sm font-bold text-purple-400">Cloud Sync Complete</div>
+          <div class="text-[11px] text-slate-300">Batch logged to Firebase</div>
+        `;
+        addMockLog();
+        stopBrew();
+        return;
+      }
+
+      setStep(state);
+
+      document.getElementById('val-temp').innerText = currentTemp.toFixed(1) + ' °C';
+      document.getElementById('disp-temp-str').innerText = currentTemp.toFixed(1) + '°C';
+      document.getElementById('val-tds').innerText = Math.round(currentTDS) + ' ppm';
+
+      chart.data.labels.push(secondsElapsed + 's');
+      chart.data.datasets[0].data.push(currentTemp);
+      chart.data.datasets[1].data.push(Math.round(currentTDS));
+      if (chart.data.labels.length > 20) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+        chart.data.datasets[1].data.shift();
+      }
+      chart.update();
+    }
+
+    function setStep(stepName) {
+      document.getElementById('current-state-badge').innerText = stepName;
+      
+      const allSteps = ['IDLE', 'SCAN', 'DOSE', 'EXTRACT', 'ENDPOINT', 'SERVE', 'LOG'];
+      allSteps.forEach(s => {
+        const el = document.getElementById('step-' + s);
+        if (!el) return;
+        if (s === stepName) {
+          el.className = "step-item p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 flex items-center justify-between font-bold";
+          el.querySelector('.step-status').innerText = "ACTIVE";
+        } else {
+          el.className = "step-item p-2.5 rounded-xl border border-slate-800 bg-slate-950/50 text-slate-400 flex items-center justify-between font-normal";
+          el.querySelector('.step-status').innerText = "DONE / WAIT";
+        }
+      });
+    }
+
+    function selectSymptomCard(cardEl, title, herbStr, tds, tMin, tMax) {
+      document.querySelectorAll('.symptom-card').forEach(c => {
+        c.classList.remove('selected-symptom-card');
+        c.querySelector('h4').className = 'font-extrabold text-sm text-white';
+      });
+      
+      cardEl.classList.add('selected-symptom-card');
+      cardEl.querySelector('h4').className = 'font-extrabold text-sm text-emerald-400';
+      
+      recipeName = herbStr;
+      targetTDS = tds;
+      
+      let icon = '🦵';
+      if (title.includes('Cold')) icon = '🤧';
+      if (title.includes('Headache')) icon = '🤕';
+
+      document.getElementById('disp-icon').innerText = icon;
+      document.getElementById('disp-herb-title').innerText = title;
+      document.getElementById('disp-sub-text').innerText = herbStr;
+      document.getElementById('val-target-label').innerText = `Target: ${tds} ppm`;
+    }
+
+    function addMockLog() {
+      const tbody = document.getElementById('log-table-body');
+      const now = new Date();
+      const timeStr = now.toISOString().slice(0,16).replace('T',' ');
+      const modeStr = mode.toUpperCase();
+      const uid = mode === 'pod' ? '04:B' + Math.floor(Math.random()*90+10) + ':C7:99' : 'USER_LOADED_LOOSE';
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="p-3 text-slate-400">${timeStr}</td>
+        <td class="p-3"><span class="px-2 py-0.5 rounded ${mode === 'pod' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'}">${modeStr}</span></td>
+        <td class="p-3 font-bold text-white">${uid}</td>
+        <td class="p-3">${recipeName}</td>
+        <td class="p-3 text-emerald-400">${Math.round(currentTDS || targetTDS)} ppm</td>
+        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">100% OPTIMAL</span></td>
+      `;
+      tbody.insertBefore(tr, tbody.firstChild);
+    }
+  </script>
+</body>
+</html>

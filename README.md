@@ -26,11 +26,7 @@ This repository contains the ESP32 Display Controller and User Interface mockup 
 - **`ikwath_ui_specification.md`**: Architectural and backend specification document detailing parameters like water dosing and heater PID bands.
 - **Assets**: High-definition athletic male model photos for visual symptom presentation (`masculine_body_pain...`, `cold_chest_pain...`, `headache_pain...`).
 
-## Live UI Demo
-*(Add your GitHub Pages link here once deployed: `https://<your-username>.github.io/<repo-name>`)*
+## 🌐 Live Project Demos (Available 24/7)
 
-## How to Deploy the Live Link via GitHub Pages
-1. In your GitHub repository, go to **Settings** > **Pages**.
-2. Under "Build and deployment", set the **Source** to `Deploy from a branch`.
-3. Select the `master` or `main` branch and `/ (root)` folder, then click **Save**.
-4. Wait a minute or two, and GitHub will provide you with a live link to your `index.html` simulator! You can then add this link to your repository's About section.
+- **SIH 2026 Telemetry Dashboard:** [https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/dashboard.html](https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/dashboard.html)
+- **Machine LCD Screen Mockup:** [https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/](https://chinmayeekashikarec25.github.io/26048_SHADOW_VAULT/)
